@@ -374,6 +374,7 @@
 <link id="portfolio-flex-carousel" rel="stylesheet" href="demo-assets/flex-carousel.css">
 <link id="portfolio-circular-carousel" rel="stylesheet" href="demo-assets/circular-carousel.css">
 <link id="portfolio-home-effects" rel="stylesheet" href="demo-assets/home-effects-v10.css">
+<link rel="stylesheet" href="demo-assets/mobile-gallery-v11.css">
 </head>
 <body>
   <div class="stage" id="stage" aria-hidden="true">
@@ -416,151 +417,8 @@
 <script src="demo-assets/circular-carousel-v10.js"></script>
 <script src="demo-assets/flex-carousel-v10.js"></script>
 <script src="demo-assets/video-stream-v10.js"></script>
-<script id="personal-viewer">
-window.mountPersonalWorks=function(DATA){
-  const person=DATA.personal,projects=DATA.projects,visuals=projects.filter(p=>p.kind==='design'),videos=projects.filter(p=>p.kind==='video');
-  const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const tabs=[['resume','个人简历'],['visuals','视觉作品'],['videos','视频项目'],['contact','联系我']];
-  const themes=['概念与自然','旅行与日常','食品与产品','品牌视觉'];
-  const categories=['广告短片','游戏视觉','仿真人短剧','漫剧','叙事短片'];
-  const dialog=document.createElement('dialog');dialog.className='work-dialog';dialog.setAttribute('aria-labelledby','works-title');
-  dialog.innerHTML='<header class="work-header"><div><p>黄柏华 / 创作集</p><h2 id="works-title">个人简历</h2></div><button class="work-close" aria-label="关闭作品浏览">关闭 ×</button></header><nav class="work-tabs" aria-label="作品目录"></nav><div class="work-main"></div>';
-  document.body.append(dialog);
-  const main=dialog.querySelector('.work-main'),title=dialog.querySelector('#works-title'),nav=dialog.querySelector('.work-tabs');
-  const box=document.createElement('dialog');box.className='image-dialog';box.setAttribute('aria-label','作品大图');
-  box.innerHTML='<div class="image-toolbar"><span id="image-counter" aria-live="polite"></span><button data-zoom aria-pressed="false">放大</button><a id="image-download" download>保存图片 ↓</a><button aria-label="关闭大图" data-image-close>关闭 ×</button></div><div class="image-stage"><button aria-label="上一张作品" data-prev>‹</button><figure><img id="artwork-image" alt=""><figcaption></figcaption></figure><button aria-label="下一张作品" data-next>›</button></div><p class="image-help">左右滑动或按方向键切换 · Esc 返回</p>';
-  document.body.append(box);
-  let active='resume',theme='概念与自然',category='广告短片',selectedVideo=null,imageItems=[],imageIndex=0,focusReturn=null,imageFocus=null;
-  const positions=new Map(),playback=new Map(),listPositions=new Map();
-  let carousels=[],mediaProject=null,mediaFocus=null,mediaWasPlaying=false,inlineClickTimer=0;
-  const mediaBox=document.createElement('dialog');mediaBox.className='media-dialog';mediaBox.setAttribute('aria-label','视频放大播放');
-  mediaBox.innerHTML='<header><h3></h3><button data-media-close aria-label="关闭放大视频">关闭 ×</button></header><video controls playsinline preload="metadata"></video><footer><span>Esc 返回项目</span><a download>下载视频 ↓</a></footer>';
-  document.body.append(mediaBox);
-  const suspendCarousels=value=>carousels.forEach(c=>c.setSuspended(value));
-  const disposeCarousels=()=>{carousels.forEach(c=>c.destroy());carousels=[];};
-  const mountCarousel=(element,items,options)=>{const api=(options.effect==='flex'?window.mountFlexCarousel:window.mountCircularCarousel)(element,items,options);carousels.push(api);return api;};
-  const openImage=(index,source)=>{imageIndex=index;imageFocus=source;showImage();suspendCarousels(true);box.showModal();};
-  const openVideo=(project,source)=>{
-    mediaProject=project;mediaFocus=source;const inline=main.querySelector('#project-video');
-    mediaWasPlaying=Boolean(inline&&!inline.paused&&selectedVideo===project.id);
-    const current=inline&&selectedVideo===project.id?inline.currentTime:playback.get(project.id)||0;
-    stopVideos();suspendCarousels(true);
-    const player=mediaBox.querySelector('video');mediaBox.querySelector('h3').textContent=project.title;
-    PortfolioVideo.downloadLink(mediaBox.querySelector('a'),project);player.poster=project.cover.display;PortfolioVideo.attach(player,project);
-    player.addEventListener('loadedmetadata',()=>{if(current)player.currentTime=Math.min(current,player.duration||current);},{once:true});
-    mediaBox.showModal();PortfolioVideo.play(player).catch(()=>{});
-  };
-  const key=()=>active==='visuals'?'visuals:'+theme:active==='videos'?'videos:'+category:active;
-  const remember=()=>{positions.set(key(),main.scrollTop);const v=main.querySelector('#project-video');if(v&&selectedVideo)playback.set(selectedVideo,v.currentTime);};
-  const moveTo=element=>{if(!element)return;element.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});};
-  const restorePlayer=()=>{const v=main.querySelector('#project-video');if(!v)return;const t=playback.get(selectedVideo);if(t){const restore=()=>{v.currentTime=Math.min(t,v.duration||t);};if(v.readyState>=1)restore();else v.addEventListener('loadedmetadata',restore,{once:true});}};
-  const updateFilterSize=()=>{const filters=main.querySelector('.gallery-filters');main.style.setProperty('--filter-h',filters?filters.offsetHeight+'px':'0px');};
-  const resizeObserver=new ResizeObserver(updateFilterSize);resizeObserver.observe(main);
-  const visualItems=()=>visuals.flatMap(p=>p.images.map((image,i)=>({image,title:p.title.replace(/^AI 视觉 · |^食品海报 · /,''),project:p,index:i,theme:p.category==='品牌设计'?'品牌视觉':DATA.posterThemes[p.id]})));
-  const filteredVisuals=()=>visualItems().filter(item=>item.theme===theme);
-  const contacts=()=>'<div class="contact-links"><a href="mailto:'+esc(person.email)+'">'+esc(person.email)+' ↗</a><a href="tel:'+esc(person.phone)+'">'+esc(person.phone)+'</a></div>';
-  const stopVideos=()=>{clearTimeout(inlineClickTimer);main.querySelectorAll('video').forEach(v=>v.pause());};
-  const renderResume=()=>{
-    main.innerHTML='<section class="resume-panel"><div class="resume-photo"><img src="'+esc(person.photo)+'" alt="黄柏华个人照片"><p>黄柏华 / 创作与表达</p></div><div class="resume-copy"><p class="gallery-kicker">'+esc(person.role)+'</p><h3>'+esc(person.name)+'</h3><p class="resume-lead">'+esc(person.intro)+'</p>'+contacts()+'<div class="resume-actions"><a class="filled-link" href="'+esc(person.resume)+'" target="_blank" rel="noreferrer">打开个人简历 ↗</a><a href="'+esc(person.resume)+'" download="黄柏华_简历.pdf">下载简历 ↓</a></div><section class="resume-block"><h4>专业能力</h4><div class="skill-list">'+person.skills.map(s=>'<span>'+esc(s)+'</span>').join('')+'</div></section><section class="resume-block"><h4>工作经历</h4><p class="muted">'+esc(person.period)+'</p><h5>'+esc(person.company)+'</h5><p>AI 内容制作</p><ul>'+person.experience.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></section><section class="resume-block"><h4>教育背景</h4><p>'+esc(person.school)+'</p></section></div></section>';
-  };
-  const renderVisuals=()=>{
-    const all=visualItems(),items=filteredVisuals();
-    const top=items.find(item=>item.project.id==='poster-series-4');
-    const ordered=top?[top,...items.filter(item=>item!==top)]:items;
-    imageItems=ordered;
-    main.innerHTML='<div class="gallery-intro"><h3>海报与品牌，放在同一间展厅。</h3><p>24 张海报 · 19 张品牌视觉，围绕色彩、构图与应用展开。</p></div><div class="gallery-filters" role="group" aria-label="视觉作品分类">'+themes.map(t=>'<button data-theme="'+esc(t)+'" aria-pressed="'+(t===theme)+'">'+esc(t)+' <small>'+all.filter(item=>item.theme===t).length+'</small></button>').join('')+'</div><div id="visual-carousel"></div><div class="gallery-bottom"><span>'+esc(theme)+' · '+items.length+' 张</span><span>拖动浏览 · 双击放大</span></div>';
-    mountCarousel(main.querySelector('#visual-carousel'),ordered.map(item=>({src:item.image.display,aspect:item.image.width/item.image.height,alt:item.image.alt,title:item.title,subtitle:item.image.alt})),{label:theme+'作品轮播',aspectRatio:theme==='品牌视觉'?1:.8,onOpen:(item,index,source)=>openImage(index,source)});
-  };
-  const assetGroup=image=>/角色|人物|三视图/.test(image.alt)?'角色':/场景|环境/.test(image.alt)?'场景':/道具|装备|服装|产品|饰品/.test(image.alt)?'道具':'配套资产';
-  const featured=['video-material-1','video-material-24','video-material-21','video-material-22'];
-  const videoOrder=[...featured.map(id=>videos.find(v=>v.id===id)).filter(Boolean),...videos.filter(v=>!featured.includes(v.id))];
-  const categoryVideos=()=>videoOrder.filter(p=>p.subcategory===category);
-  const renderVideos=()=>{
-    const filtered=categoryVideos(),selected=filtered.find(p=>p.id===selectedVideo);
-    imageItems=selected?selected.images.map((image,i)=>({image,title:selected.title+' · '+image.alt,index:i})):[];
-    main.innerHTML='<div class="gallery-intro"><h3>先看成片，再看对应资产。</h3><p>拖动封面浏览 · 双击放大播放 · 点击“项目与资产”查看制作资料。影像含制作练习与参考资料。</p></div><div class="gallery-filters" role="group" aria-label="视频项目分类">'+categories.map(c=>'<button data-category="'+esc(c)+'" aria-pressed="'+(c===category)+'">'+esc(c)+' <small>'+videos.filter(v=>v.subcategory===c).length+'</small></button>').join('')+'</div><div id="video-carousel"></div><div class="video-detail-host"></div>';
-    const videoCarousel=mountCarousel(main.querySelector('#video-carousel'),filtered.map(p=>({src:p.cover.display,aspect:p.cover.width/p.cover.height,alt:p.cover.alt,title:p.title,subtitle:p.subcategory+' · '+(p.duration||'影像资料'),video:p.video,project:p})),{effect:'flex',label:category+'视频轮播',cardWidth:320,aspectRatio:1.6,openLabel:'放大播放 ↗',onOpen:(item,index,source)=>openVideo(item.project,source),onProject:item=>selectVideo(item.project.id)});
-    if(!selected)return;
-    videoCarousel.focus(filtered.indexOf(selected));
-    const groups=['角色','场景','道具','配套资产'].map(label=>({label,items:imageItems.map((item,i)=>({...item,globalIndex:i})).filter(item=>assetGroup(item.image)===label)})).filter(group=>group.items.length);
-    const index=filtered.indexOf(selected),previous=filtered[index-1],next=filtered[index+1];
-    const detail=document.createElement('section');detail.className='selected-video';detail.id='selected-video';detail.tabIndex=-1;
-    detail.innerHTML='<div class="project-toolbar"><button data-collapse-video>← 返回列表</button><button data-jump="project-assets">查看资产 '+selected.images.length+' ↓</button><div class="project-step"><button data-step="'+esc(previous?.id||'')+'" '+(!previous?'disabled':'')+'>上一个</button><span>'+(index+1)+' / '+filtered.length+'</span><button data-step="'+esc(next?.id||'')+'" '+(!next?'disabled':'')+'>下一个</button></div></div><div class="selected-heading"><div><p class="gallery-kicker">'+esc(DATA.videoLabels[selected.id]||'收录影像资料')+'</p><h3>'+esc(selected.title)+'</h3></div><button class="video-enlarge" data-enlarge-video>放大播放 ↗</button></div><div class="project-player"><video id="project-video" controls playsinline preload="metadata" poster="'+esc(selected.cover.display)+'" src="'+esc(selected.video)+'" aria-label="'+esc(selected.title)+'，双击放大"></video><button class="video-hit-area" aria-label="双击放大项目视频"><span>单击播放 / 暂停 · 双击放大 ↗</span></button></div><p class="video-error" role="alert" hidden>视频暂时无法播放，请刷新后重试，或下载查看。</p><div class="project-actions"><a href="'+esc(selected.video)+'" download>下载视频 ↓</a>'+(selected.id==='video-material-1'?'<a href="'+esc(person.perfumeDocument)+'" target="_blank" rel="noreferrer">查看镜头拆解与复现脚本 ↗</a>':'')+'</div><details class="project-notes"><summary>项目资料与制作说明</summary><p>'+esc(selected.description)+'</p></details><div class="attached-title" id="project-assets" tabindex="-1"><h4>配套创作资产</h4><span>'+selected.images.length+' 张 · 双击放大</span></div>'+(groups.length?'<nav class="asset-jumps" aria-label="本项目资产类型">'+groups.map((g,i)=>'<button data-jump="asset-group-'+i+'">'+g.label+' '+g.items.length+'</button>').join('')+'</nav>'+groups.map((group,i)=>'<section class="asset-group" id="asset-group-'+i+'" tabindex="-1"><h5>'+group.label+' <small>'+group.items.length+' 张</small></h5><div class="asset-carousel" data-asset-carousel="'+i+'"></div></section>').join(''):'<p class="empty-assets">当前收录视频，尚未提供可确认对应的配套资产。</p>');
-    main.querySelector('.video-detail-host').append(detail);
-    groups.forEach((group,i)=>mountCarousel(detail.querySelector('[data-asset-carousel="'+i+'"]'),group.items.map(item=>({src:item.image.display,aspect:item.image.width/item.image.height,alt:item.image.alt,title:item.image.alt,subtitle:selected.title,globalIndex:item.globalIndex})),{effect:'flex',label:selected.title+' · '+group.label+'资产轮播',cardWidth:240,aspectRatio:.8,onOpen:(item,index,source)=>openImage(item.globalIndex,source)}));
-    const player=main.querySelector('#project-video');PortfolioVideo.attach(player,selected);PortfolioVideo.downloadLink(detail.querySelector('.project-actions a[download]'),selected);player.addEventListener('error',()=>{main.querySelector('.video-error').hidden=false;});
-    const videoHit=detail.querySelector('.video-hit-area');
-    videoHit.addEventListener('click',event=>{clearTimeout(inlineClickTimer);if(event.detail===0){openVideo(selected,videoHit);return;}if(event.detail<2)inlineClickTimer=setTimeout(()=>{if(player.paused)PortfolioVideo.play(player).catch(()=>{});else player.pause();},240);});
-    videoHit.addEventListener('dblclick',event=>{event.preventDefault();clearTimeout(inlineClickTimer);openVideo(selected,videoHit);});
-    restorePlayer();
-  };
-  const renderContact=()=>{
-    main.innerHTML='<section class="contact-panel"><div class="contact-copy"><p class="gallery-kicker">联系与合作</p><h3>让下一段故事，<br>从这里开始。</h3><p class="contact-intro">欢迎交流 AI 视觉、短剧制作与视频后期相关机会。</p>'+contacts()+'<a class="filled-link" href="'+esc(person.resume)+'" target="_blank" rel="noreferrer">查看个人简历 ↗</a></div><figure class="contact-portrait"><img src="demo-assets/contact-portrait-20261013.webp" alt="黄柏华个人照片，夕阳街景" width="1086" height="1448"><figcaption>黄柏华 <span>AI 视觉 · 短剧与后期</span></figcaption></figure></section>';
-  };
-  const render=()=>{
-    stopVideos();disposeCarousels();title.textContent=tabs.find(t=>t[0]===active)[1];
-    nav.innerHTML=tabs.map(([id,label])=>'<button data-tab="'+id+'" aria-pressed="'+(active===id)+'">'+label+'</button>').join('');
-    if(active==='resume')renderResume();else if(active==='visuals')renderVisuals();else if(active==='videos')renderVideos();else renderContact();
-    updateFilterSize();main.scrollTop=positions.get(key())||0;
-  };
-  const showImage=()=>{
-    const item=imageItems[imageIndex],image=box.querySelector('#artwork-image');if(!item)return;
-    box.classList.remove('is-zoomed');box.querySelector('[data-zoom]').setAttribute('aria-pressed','false');box.querySelector('[data-zoom]').textContent='放大';
-    image.src=item.image.full;image.alt=item.image.alt;box.querySelector('figcaption').textContent=item.title;
-    box.querySelector('#image-counter').textContent=(imageIndex+1)+' / '+imageItems.length;
-    const link=box.querySelector('#image-download');link.href=item.image.full;
-    box.querySelector('[data-prev]').disabled=imageItems.length<2;box.querySelector('[data-next]').disabled=imageItems.length<2;
-  };
-  const selectVideo=(id,fromList=true)=>{
-    remember();if(fromList)listPositions.set(category,main.scrollTop);
-    selectedVideo=id;render();
-    const detail=main.querySelector('#selected-video');if(!detail)return;
-    detail.focus({preventScroll:true});moveTo(detail);
-    const v=main.querySelector('#project-video');PortfolioVideo.play(v).catch(()=>{});
-  };
-  const returnToList=()=>{
-    const id=selectedVideo;remember();selectedVideo=null;render();
-    main.scrollTop=listPositions.get(category)||0;
-    const carousel=carousels[0];carousel?.focus(categoryVideos().findIndex(p=>p.id===id));main.querySelector('#video-carousel')?.focus({preventScroll:true});
-  };
-  main.addEventListener('click',event=>{
-    const button=event.target.closest('button');if(!button)return;
-    if(button.dataset.theme){remember();theme=button.dataset.theme;render();main.querySelector('[data-theme][aria-pressed="true"]').focus({preventScroll:true});}
-    else if(button.dataset.category){remember();category=button.dataset.category;selectedVideo=null;render();main.querySelector('[data-category][aria-pressed="true"]').focus({preventScroll:true});}
-    else if(button.dataset.video){if(selectedVideo===button.dataset.video)returnToList();else selectVideo(button.dataset.video);}
-    else if(button.hasAttribute('data-enlarge-video'))openVideo(videos.find(p=>p.id===selectedVideo),button);
-    else if(button.hasAttribute('data-collapse-video'))returnToList();
-    else if(button.dataset.step)selectVideo(button.dataset.step,false);
-    else if(button.dataset.jump){const target=main.querySelector('#'+button.dataset.jump);target?.focus({preventScroll:true});moveTo(target);}
-    else if(button.hasAttribute('data-image'))openImage(Number(button.dataset.image),button);
-  });
-  nav.addEventListener('click',event=>{const button=event.target.closest('[data-tab]');if(button){remember();active=button.dataset.tab;render();nav.querySelector('[aria-pressed="true"]').focus({preventScroll:true});}});
-  dialog.querySelector('.work-close').addEventListener('click',()=>dialog.close());
-  dialog.addEventListener('close',()=>{remember();stopVideos();suspendCarousels(true);if(box.open)box.close();if(mediaBox.open)mediaBox.close();document.body.style.overflow='';if(focusReturn?.isConnected)focusReturn.focus({preventScroll:true});});
-  box.querySelector('[data-image-close]').addEventListener('click',()=>box.close());
-  box.addEventListener('close',()=>{if(dialog.open)suspendCarousels(false);if(imageFocus?.isConnected)imageFocus.focus({preventScroll:true});});
-  box.querySelector('#artwork-image').addEventListener('dblclick',event=>{event.preventDefault();box.querySelector('[data-zoom]').click();});
-  mediaBox.querySelector('[data-media-close]').addEventListener('click',()=>mediaBox.close());
-  mediaBox.addEventListener('close',()=>{
-    const player=mediaBox.querySelector('video'),time=player.currentTime;PortfolioVideo.detach(player);player.pause();
-    if(mediaProject)playback.set(mediaProject.id,time);player.removeAttribute('src');player.load();
-    const inline=main.querySelector('#project-video');if(inline&&mediaProject?.id===selectedVideo){inline.currentTime=time;if(mediaWasPlaying&&dialog.open)PortfolioVideo.play(inline).catch(()=>{});}
-    if(dialog.open)suspendCarousels(false);if(mediaFocus?.isConnected)mediaFocus.focus({preventScroll:true});
-  });
-  box.querySelector('[data-prev]').addEventListener('click',()=>{imageIndex=(imageIndex-1+imageItems.length)%imageItems.length;showImage();});
-  box.querySelector('[data-next]').addEventListener('click',()=>{imageIndex=(imageIndex+1)%imageItems.length;showImage();});
-  document.addEventListener('keydown',event=>{if(!box.open)return;if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();imageIndex=(imageIndex+(event.key==='ArrowLeft'?-1:1)+imageItems.length)%imageItems.length;showImage();}});
-  box.querySelector('[data-zoom]').addEventListener('click',()=>{const zoomed=box.classList.toggle('is-zoomed');const button=box.querySelector('[data-zoom]');button.setAttribute('aria-pressed',String(zoomed));button.textContent=zoomed?'适应屏幕':'放大';});
-  let swipe=null;
-  const imageStage=box.querySelector('.image-stage');
-  imageStage.addEventListener('pointerdown',event=>{if(event.pointerType==='touch'&&!box.classList.contains('is-zoomed')&&!event.target.closest('button'))swipe={id:event.pointerId,x:event.clientX,y:event.clientY};});
-  imageStage.addEventListener('pointerup',event=>{if(!swipe||swipe.id!==event.pointerId)return;const dx=event.clientX-swipe.x,dy=event.clientY-swipe.y;swipe=null;if(Math.abs(dx)>48&&Math.abs(dy)<Math.abs(dx)*.6){imageIndex=(imageIndex+(dx<0?1:-1)+imageItems.length)%imageItems.length;showImage();}});
-  imageStage.addEventListener('pointercancel',()=>{swipe=null;});
-  [dialog,box,mediaBox].forEach(d=>d.addEventListener('click',event=>{if(event.target!==d)return;const r=d.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)d.close();}));
-  return {open(tab){if(dialog.open)remember();focusReturn=document.activeElement;active=tabs.some(t=>t[0]===tab)?tab:'visuals';render();if(!dialog.open)dialog.showModal();document.body.style.overflow='hidden';},close(){dialog.close();}};
-};
-
-</script>
+<script src="demo-assets/mobile-gallery-v11.js"></script>
+<script id="personal-viewer" src="demo-assets/personal-viewer-v11.js"></script>
 <script id="sugar-entry-motion" src="demo-assets/sugar-entry-motion-v10.js"></script>
 
   <script id="portfolio-home-runtime" src="demo-assets/home-runtime-v10.js"></script>
