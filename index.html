@@ -371,6 +371,7 @@
   </style>
 <link id="portfolio-flex-carousel" rel="stylesheet" href="demo-assets/flex-carousel.css">
 <link id="portfolio-circular-carousel" rel="stylesheet" href="demo-assets/circular-carousel.css">
+<link id="portfolio-home-effects" rel="stylesheet" href="demo-assets/home-effects.css">
 </head>
 <body>
   <div class="stage" id="stage" aria-hidden="true">
@@ -401,7 +402,7 @@
         <div class="info" data-s2><span class="info-badge" aria-hidden="true">i</span><p class="micro" style="margin:0">从个人经历到视觉作品，再到视频与配套资产。点击下方入口，开始浏览。<br><small>开场动画为模板演示素材。</small></p></div>
       </div>
       <div class="cards" aria-label="个人作品目录" tabindex="0">
-<button class="card" data-s2 data-open="resume" aria-label="查看简历"><span class="card-num">01</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/resume.webp" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="resume" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">个人简历</span><span class="card-body">AI 视觉、短剧制作与视频后期。</span><span class="entry-open">查看简历<span aria-hidden="true">↗</span></span></button>
+<button class="card" data-s2 data-open="resume" aria-label="查看简历"><span class="card-num">01</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/resume-card.svg" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="resume" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">个人简历</span><span class="card-body">AI 视觉、短剧制作与视频后期。</span><span class="entry-open">查看简历<span aria-hidden="true">↗</span></span></button>
 <button class="card" data-s2 data-open="visuals" aria-label="浏览视觉作品"><span class="card-num">02</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/visuals.webp" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="visuals" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">视觉作品</span><span class="card-body">24 张海报与 19 张品牌视觉。</span><span class="entry-open">浏览视觉作品<span aria-hidden="true">↗</span></span></button>
 <button class="card" data-s2 data-open="videos" aria-label="浏览视频项目"><span class="card-num">03</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/videos.webp" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="videos" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">视频项目</span><span class="card-body">24 段影像资料，附对应创作资产。</span><span class="entry-open">浏览视频项目<span aria-hidden="true">↗</span></span></button>
 <button class="card" data-s2 data-open="contact" aria-label="查看联系方式"><span class="card-num">04</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/contact.webp" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="contact" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">联系我</span><span class="card-body">交流创作，也期待新的合作。</span><span class="entry-open">查看联系方式<span aria-hidden="true">↗</span></span></button>
@@ -561,7 +562,7 @@ window.mountPersonalWorks=function(DATA){
 /* The icon itself fractures into textured sugar grains and reassembles. */
 (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  const stage = document.querySelector('#stage');
+  const stage = document.querySelector('#stage'), directory = document.querySelector('#scene2');
   const items = [];
   let raf = 0, last = 0;
   const random = seed => { let value = seed; return () => { value = (value * 1664525 + 1013904223) >>> 0; return value / 4294967296; }; };
@@ -661,7 +662,7 @@ window.mountPersonalWorks=function(DATA){
       ctx.restore();
     }
   };
-  const visible = item => item.visible && item.width > 0 && item.height > 0 && stage?.dataset.motion === 'end' && !document.querySelector('.work-dialog[open]') && !document.hidden;
+  const visible = item => item.visible && item.width > 0 && item.height > 0 && !directory.inert && Number(item.card.style.opacity || 1) > .1 && !document.querySelector('.work-dialog[open]') && !document.hidden;
   const frame = now => {
     raf = 0;
     const dt = Math.min(now - (last || now), 48); last = now;
@@ -687,7 +688,7 @@ window.mountPersonalWorks=function(DATA){
     const ready = () => {
       try {
         const model = fracture(image); if (!model) return;
-        const item = {canvas, ctx, model, phase: i * 1.2, spread: 0, hover: false, focus: false, visible: false, width: 0, height: 0};
+        const item = {canvas, card, ctx, model, phase: i * 1.2, spread: 0, hover: false, focus: false, visible: false, width: 0, height: 0};
         items.push(item);
         const resize = new ResizeObserver(() => {const r = canvas.getBoundingClientRect(); item.width = r.width; item.height = r.height; if (r.width && r.height) {draw(item, performance.now()); canvas.parentElement.dataset.ready = 'true';} wake();});
         resize.observe(canvas); observer.observe(canvas);
@@ -699,7 +700,8 @@ window.mountPersonalWorks=function(DATA){
     };
     if (image.complete && image.naturalWidth) ready(); else image.addEventListener('load', ready, {once: true});
   });
-  new MutationObserver(wake).observe(stage, {attributes: true, attributeFilter: ['data-motion']});
+  new MutationObserver(wake).observe(directory, {attributes: true, attributeFilter: ['inert', 'style']});
+  window.addEventListener('scroll', wake, {passive: true});
   new MutationObserver(wake).observe(document.body, {subtree: true, attributes: true, attributeFilter: ['open']});
   document.addEventListener('visibilitychange', wake);
   reduce.addEventListener('change', wake);
@@ -752,7 +754,7 @@ window.mountPersonalWorks=function(DATA){
       };
       const frame=now=>{
         const dt=Math.min((now-lastFrame)/1000,.05);lastFrame=now;
-        const k=reduce?1:1-Math.exp(-dt*7.5),p=progress(),targetTime=p*Math.max(duration-.06,.06),expTarget=range(p,.10,.38);
+        const k=reduce?1:1-Math.exp(-dt*7.5),p=progress(),targetTime=p*Math.max(duration-.06,.06),expTarget=range(p,.06,.28);
         const busy=p!==lastP||Math.abs(targetTime-smoothTime)>.003||Math.abs(expTarget-smoothExp)>.0015;
         lastP=p;idle=busy?0:idle+1;if(idle>3){const state=scrollY<=1?'start':root.scrollHeight-innerHeight-scrollY<=1?'end':'middle';if(stage.dataset.motion!==state)stage.dataset.motion=state;requestAnimationFrame(frame);return;}
         if(stage.dataset.motion!=='moving')stage.dataset.motion='moving';
@@ -762,12 +764,12 @@ window.mountPersonalWorks=function(DATA){
         const e=smoothExp,ie=1-e;
         root.style.setProperty('--inset-x',CARD_GAP*ie+'px');root.style.setProperty('--inset-t',(NAV_H+CARD_GAP*.34)*ie+'px');root.style.setProperty('--radius',CARD_R*ie+'px');
         Object.entries(colors).forEach(([name,[a,b]])=>root.style.setProperty(name,mix(a,b,e)));
-        const out1=range(p,.20,.45),rest1=out1<=.002;
+        const out1=range(p,.14,.34),rest1=out1<=.002;
         scene1.style.opacity=String(1-out1);scene1.style.transform=rest1?'none':'translate3d(0,'+(-52*out1)+'px,0)';scene1.style.filter=rest1?'none':'blur('+(out1*7)+'px)';scene1.style.visibility=out1>=.999?'hidden':'visible';
         scene1.inert=out1>=.999;scene1.setAttribute('aria-hidden',String(out1>=.999));
-        const in2=range(p,.62,.88),hidden2=in2<=.001;
+        const in2=range(p,.32,.58),hidden2=in2<=.001;
         scene2.style.visibility=hidden2?'hidden':'visible';scene2.inert=hidden2;scene2.setAttribute('aria-hidden',String(hidden2));
-        s2Items.forEach((item,i)=>{const t=ease((in2-i*S2_STEP)/S2_SPAN);if(t>=.998){if(!s2Applied[i]){item.style.opacity='';item.style.transform='';s2Applied[i]=true;}}else{item.style.opacity=String(t);item.style.transform='translate3d(0,'+(30*(1-t))+'px,0)';s2Applied[i]=false;}});
+        s2Items.forEach((item,i)=>{const t=ease((in2-i*S2_STEP)/S2_SPAN);item.inert=t<.15;item.style.pointerEvents=t<.15?'none':'';if(t>=.998){if(!s2Applied[i]){item.style.opacity='';item.style.transform='';s2Applied[i]=true;}}else{item.style.opacity=String(t);item.style.transform='translate3d(0,'+(30*(1-t))+'px,0)';s2Applied[i]=false;}});
         requestAnimationFrame(frame);
       };
       requestAnimationFrame(frame);
@@ -787,9 +789,10 @@ window.mountPersonalWorks=function(DATA){
       document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!menuPanel.hidden){closeMenu();menuButton.focus();}});
       document.querySelector('.logo').addEventListener('click',event=>{event.preventDefault();closeMenu();scrollToProgress(0);});
       document.querySelector('[data-home]').addEventListener('click',()=>{closeMenu();scrollToProgress(0);});
-      document.querySelector('[data-directory]').addEventListener('click',()=>{closeMenu();scrollToProgress(1);});
+      document.querySelector('[data-directory]').addEventListener('click',()=>{closeMenu();scrollToProgress(.66);});
       document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>{closeMenu();gallery.open(button.dataset.open);}));
     })();
   </script>
+<script src="demo-assets/home-effects.js"></script>
 </body>
 </html>
