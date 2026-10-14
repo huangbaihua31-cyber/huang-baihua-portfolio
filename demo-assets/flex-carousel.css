@@ -1,0 +1,13 @@
+.flex-gallery{margin:18px 0 26px;outline:none;min-width:0;color:#333329}
+.flex-gallery:focus-visible{outline:2px solid #968564;outline-offset:5px}
+.flex-carousel{position:relative;height:clamp(330px,39vw,490px);overflow:hidden;touch-action:pan-y;cursor:grab;isolation:isolate;background:#eeece4}
+.flex-carousel[data-hover=open]{cursor:zoom-in}.flex-carousel[data-hover=close]{cursor:zoom-out}.flex-carousel[data-dragging]{cursor:grabbing}
+.flex-carousel canvas{position:absolute;inset:0;max-width:100%;height:100%}
+.flex-carousel__caption{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin:18px 4px 16px;min-height:46px}
+.flex-carousel__title{font-size:17px;margin:0 0 5px;line-height:1.45}.flex-carousel__subtitle{font-size:12px;color:#77766b;line-height:1.5}.flex-carousel__count{font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums;padding-top:5px}
+.flex-carousel__controls{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.flex-carousel__controls>div{display:flex;gap:8px;flex-wrap:wrap}
+.flex-carousel__controls button{border:1px solid #d1cec0;background:transparent;color:inherit;border-radius:3px;padding:9px 15px;font:inherit;font-size:12px;cursor:pointer;min-height:40px}.flex-carousel__controls button:hover{background:#e4e0d4}.flex-carousel__controls button:focus-visible{outline:2px solid #968564;outline-offset:2px}.flex-carousel__controls button:disabled{opacity:.35;cursor:default}
+.flex-carousel__help{color:#88867b;font-size:11px;line-height:1.7;margin:13px 0 0}.flex-carousel__live{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.asset-carousel.flex-gallery .flex-carousel{height:clamp(340px,36vw,460px)}
+@media(max-width:600px){.flex-carousel{height:330px}.flex-carousel__title{font-size:15px}.flex-carousel__caption{gap:10px;margin-top:14px}.flex-carousel__controls button{padding:9px 12px}.asset-carousel.flex-gallery .flex-carousel{height:350px}}
+@media(prefers-reduced-motion:reduce){.flex-gallery *{scroll-behavior:auto}}
