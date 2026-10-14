@@ -371,7 +371,7 @@
   </style>
 <link id="portfolio-flex-carousel" rel="stylesheet" href="demo-assets/flex-carousel.css">
 <link id="portfolio-circular-carousel" rel="stylesheet" href="demo-assets/circular-carousel.css">
-<link id="portfolio-home-effects" rel="stylesheet" href="demo-assets/home-effects.css">
+<link id="portfolio-home-effects" rel="stylesheet" href="demo-assets/home-effects-v8.css">
 </head>
 <body>
   <div class="stage" id="stage" aria-hidden="true">
@@ -402,7 +402,7 @@
         <div class="info" data-s2><span class="info-badge" aria-hidden="true">i</span><p class="micro" style="margin:0">从个人经历到视觉作品，再到视频与配套资产。点击下方入口，开始浏览。<br><small>开场动画为模板演示素材。</small></p></div>
       </div>
       <div class="cards" aria-label="个人作品目录" tabindex="0">
-<button class="card" data-s2 data-open="resume" aria-label="查看简历"><span class="card-num">01</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/resume-card.svg" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="resume" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">个人简历</span><span class="card-body">AI 视觉、短剧制作与视频后期。</span><span class="entry-open">查看简历<span aria-hidden="true">↗</span></span></button>
+<button class="card" data-s2 data-open="resume" aria-label="查看简历"><span class="card-num">01</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/resume-sugar-v8.png" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="resume" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">个人简历</span><span class="card-body">AI 视觉、短剧制作与视频后期。</span><span class="entry-open">查看简历<span aria-hidden="true">↗</span></span></button>
 <button class="card" data-s2 data-open="visuals" aria-label="浏览视觉作品"><span class="card-num">02</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/visuals.webp" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="visuals" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">视觉作品</span><span class="card-body">24 张海报与 19 张品牌视觉。</span><span class="entry-open">浏览视觉作品<span aria-hidden="true">↗</span></span></button>
 <button class="card" data-s2 data-open="videos" aria-label="浏览视频项目"><span class="card-num">03</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/videos.webp" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="videos" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">视频项目</span><span class="card-body">24 段影像资料，附对应创作资产。</span><span class="entry-open">浏览视频项目<span aria-hidden="true">↗</span></span></button>
 <button class="card" data-s2 data-open="contact" aria-label="查看联系方式"><span class="card-num">04</span><span class="entry-symbol sugar-stage" aria-hidden="true"><span class="sugar-core"><img class="sugar-fallback" src="demo-assets/sugar-icons-v3/contact.webp" alt="" width="960" height="960"><canvas class="sugar-icon" data-icon="contact" width="460" height="280" aria-hidden="true"></canvas></span></span><div class="card-rule"></div><span class="card-title">联系我</span><span class="card-body">交流创作，也期待新的合作。</span><span class="entry-open">查看联系方式<span aria-hidden="true">↗</span></span></button>
@@ -793,6 +793,6 @@ window.mountPersonalWorks=function(DATA){
       document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>{closeMenu();gallery.open(button.dataset.open);}));
     })();
   </script>
-<script src="demo-assets/home-effects.js"></script>
+<script src="demo-assets/home-effects-v8.js"></script>
 </body>
 </html>
